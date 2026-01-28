@@ -1,0 +1,14 @@
+services:
+  phoenix:
+    image: arizephoenix/phoenix:latest
+    container_name: phoenix
+    restart: unless-stopped
+    ports:
+      - "6006:6006"
+      - "4317:4317"
+      - "9090:9090"
+    environment:
+      PHOENIX_ENABLE_AUTH: "true"
+      PHOENIX_SECRET: "PhoenixArizeSecretKey2024!SecureRandomStringForJWT"
+      PHOENIX_DEFAULT_ADMIN_INITIAL_PASSWORD: "admin"
+      PHOENIX_ADMINS: "admin=admin@example.com"

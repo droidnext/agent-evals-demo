@@ -1,0 +1,55 @@
+# Response Completeness Evaluation Prompt
+# Criterion ID: 2
+# Weight: 15%
+# Score Range: 1-5
+
+name: ResponseCompletenessEvaluator
+
+criterion_id: 2
+criterion_name: Response Completeness
+weight: 0.15
+score_range: [1, 5]
+type: llm_as_judge
+
+description: |
+  Evaluates whether the agent's response includes all expected information
+  to fully answer the user's query.
+
+template: |
+  You are evaluating the completeness of an AI agent's response to a user query.
+
+  [BEGIN DATA]
+  ************
+  [User Query]: {input}
+  ************
+  [Agent Response]: {output}
+  ************
+  [Expected Information]: {expected_info}
+  [END DATA]
+
+  Your task is to evaluate whether the agent's response includes all necessary information to fully answer the user's query.
+
+  Evaluation Criteria:
+  - Does the response include all key information elements expected for this type of query?
+  - Are there any important details missing that the user would reasonably expect?
+  - If multiple aspects were asked about, does the response address all of them?
+  - Is the level of detail appropriate for the query?
+  - Does the response provide sufficient context when needed?
+
+  Scoring Guidelines:
+  5 - Fully complete: All expected information is present with appropriate detail and context
+  4 - Mostly complete: Minor details missing but main information is present and sufficient
+  3 - Partially complete: Some key information present but significant gaps exist
+  2 - Minimally complete: Only superficial information provided, many important gaps
+  1 - Incomplete: Critical information missing, response does not sufficiently answer the query
+
+  Your response must be in the following format:
+  Score: [1-5]
+  Reasoning: [Brief explanation of your score in 1-2 sentences]
+
+required_variables:
+  - input
+  - output
+  - expected_info
+
+optional_variables: []

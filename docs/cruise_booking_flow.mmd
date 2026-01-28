@@ -1,0 +1,28 @@
+flowchart TB
+    RouteAgent --> Itinerary[ItinerarySearchAgent\nport, destination, duration]
+    RouteAgent --> Pricing[PricingAvailabilityAgent\nbudget, cabin pricing]
+    RouteAgent --> Search[SemanticSearchAgent\namenities, themes]
+    RouteAgent --> Rec[RecommendationAgent\npersonalized suggestions]
+    Itinerary --> Tools1[Data Search Tools\nsearch_cruises, get_cruise_by_id]
+    Pricing --> Tools2[Data Search Tools\nsearch_by_price_range,\nget_pricing_info, ...]
+    Search --> Tools3[Semantic Search Tools\nsemantic_search_cruises,\nfind_similar_cruises]
+    Rec --> Tools4[Data + Semantic Search\nsearch, recommend, compare]
+    Tools1 --> Data[(Cruises + pricing)]
+    Tools2 --> Data
+    Tools3 --> Data
+    Tools4 --> Data
+    Data --> Synthesize[Root synthesizes\nstructured response]
+    Synthesize --> Response([Response to user\nmessage, needFollowUpInfo,\nfollow_up_questions])
+    Response --> End([End])
+
+    style RouteAgent fill:#4a90d9,color:#fff
+    style Itinerary fill:#7cb342,color:#fff
+    style Pricing fill:#7cb342,color:#fff
+    style Search fill:#7cb342,color:#fff
+    style Rec fill:#7cb342,color:#fff
+    style Tools1 fill:#ffb74d
+    style Tools2 fill:#ffb74d
+    style Tools3 fill:#ffb74d
+    style Tools4 fill:#ffb74d
+    style Data fill:#e0e0e0
+    style Synthesize fill:#4a90d9,color:#fff

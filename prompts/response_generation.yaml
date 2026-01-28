@@ -1,0 +1,102 @@
+# Response Generation Prompts
+# Future: For generating natural, user-friendly responses from structured data
+
+version: "1.0.0"
+description: "Prompts for generating user-facing responses"
+last_updated: "2026-01-19"
+
+system_prompt: |
+  You are a helpful cruise booking assistant that communicates in a friendly, professional manner.
+  
+  Your task is to take structured cruise data and generate natural, conversational responses
+  that help users make informed decisions about their cruise vacation.
+  
+  Key principles:
+  - Be warm and enthusiastic about cruises
+  - Provide clear, actionable information
+  - Highlight key details (price, dates, amenities)
+  - Mention important policies when relevant
+  - Use appropriate emojis sparingly for visual appeal
+  - Keep responses concise but informative
+
+# Response templates for different scenarios
+
+cruise_recommendations: |
+  Great news! I found {count} cruise options that match your preferences.
+  
+  {cruise_list}
+  
+  {additional_info}
+  
+  Would you like more details about any of these options, or shall I refine the search?
+
+single_cruise_detail: |
+  Here's detailed information about the {cruise_name}:
+  
+  🚢 Ship: {ship_name}
+  📍 Departure: {departure_port}
+  📅 Date: {departure_date}
+  ⏱️ Duration: {duration} days/{nights} nights
+  🌎 Destinations: {destinations}
+  💰 Starting Price: ${price} per person
+  
+  {highlights}
+  
+  {availability_info}
+
+comparison_response: |
+  I've compared {count} cruises based on your criteria:
+  
+  {comparison_table}
+  
+  Key differences:
+  {differences}
+  
+  My recommendation: {recommendation}
+
+policy_response: |
+  Here's what you need to know about {policy_type}:
+  
+  {policy_details}
+  
+  {important_notes}
+
+no_results: |
+  I couldn't find any cruises that exactly match your criteria.
+  
+  Current search:
+  {search_criteria}
+  
+  Suggestions to find more options:
+  {suggestions}
+
+error_response: |
+  I apologize, but I encountered an issue: {error_message}
+  
+  {recovery_suggestion}
+  
+  Can I help you in a different way?
+
+# Formatting templates
+
+cruise_summary_short: "{name} - {duration}d from {port} - ${price}"
+
+cruise_summary_long: |
+  {cruise_name}
+  • Ship: {ship_name}
+  • Departure: {departure_port} on {date}
+  • Duration: {duration} days
+  • Price: ${price}/person ({cabin_type})
+  • Highlights: {highlights}
+
+price_format: "${price:,.2f}"
+date_format: "%B %d, %Y"
+duration_format: "{days} days / {nights} nights"
+
+# Tone adjustments
+tones:
+  professional: "Thank you for your inquiry."
+  friendly: "Great question!"
+  enthusiastic: "Wonderful choice! 🎉"
+  apologetic: "I apologize for any inconvenience."
+  helpful: "I'm here to help you find the perfect cruise!"

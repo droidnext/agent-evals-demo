@@ -1,0 +1,55 @@
+# Response Relevance Evaluation Prompt
+# Criterion ID: 1
+# Weight: 15%
+# Score Range: 1-5
+
+name: ResponseRelevanceEvaluator
+
+criterion_id: 1
+criterion_name: Response Relevance
+weight: 0.15
+score_range: [1, 5]
+type: llm_as_judge
+
+description: |
+  Measures how well the agent's response addresses the user's query.
+  Evaluates relevance, topicality, and alignment with user intent.
+
+template: |
+  You are evaluating the relevance of an AI agent's response to a user query.
+
+  [BEGIN DATA]
+  ************
+  [User Query]: {input}
+  ************
+  [Agent Response]: {output}
+  ************
+  [Expected Response Type]: {expected_response_type}
+  [END DATA]
+
+  Your task is to evaluate how well the agent's response addresses what the user actually asked.
+
+  Evaluation Criteria:
+  - Does the response directly address the user's question or request?
+  - Is the information provided relevant to the user's intent?
+  - Does the response stay on topic without unnecessary tangents?
+  - If the user asked for specific information (e.g., pricing, itineraries), does the response provide it?
+  - Does the response avoid introducing irrelevant information that distracts from the user's query?
+
+  Scoring Guidelines:
+  5 - Perfectly relevant: Response directly and completely addresses the user's query with no irrelevant content
+  4 - Highly relevant: Response addresses the query with minor irrelevant details that don't significantly detract
+  3 - Moderately relevant: Response partially addresses the query but includes significant irrelevant content
+  2 - Slightly relevant: Response tangentially relates to the query but misses the main point
+  1 - Not relevant: Response does not address the user's query at all or is completely off-topic
+
+  Your response must be in the following format:
+  Score: [1-5]
+  Reasoning: [Brief explanation of your score in 1-2 sentences]
+
+required_variables:
+  - input
+  - output
+  - expected_response_type
+
+optional_variables: []

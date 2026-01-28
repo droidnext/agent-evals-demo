@@ -1,0 +1,120 @@
+# Constraint Extraction Prompts
+# Future: For extracting structured constraints from user queries using LLM
+
+version: "1.0.0"
+description: "Prompts for extracting cruise booking constraints from natural language"
+last_updated: "2026-01-19"
+
+system_prompt: |
+  You are an expert at extracting structured information from natural language queries about cruise bookings.
+  
+  Your task is to analyze user queries and extract relevant booking constraints such as:
+  - Departure port
+  - Date/date range
+  - Duration (number of days)
+  - Destination
+  - Budget (min/max price)
+  - Number of travelers
+  - Cabin type preferences
+  - Special requirements (accessibility, dietary, etc.)
+  
+  Return structured JSON output with high accuracy.
+
+user_prompt_template: |
+  # Constraint Extraction Task
+  
+  ## User Query
+  "{query}"
+  
+  ## Task
+  Extract all relevant cruise booking constraints from the query above.
+  
+  ## Output Format (JSON)
+  ```json
+  {{
+    "departure_port": "City name or null",
+    "date_range": "Date range string or null",
+    "departure_date": "Specific date or null",
+    "duration": number or null,
+    "destination": "Destination name or null",
+    "budget": {{
+      "min": number or null,
+      "max": number or null,
+      "currency": "USD"
+    }},
+    "travelers": {{
+      "adults": number or null,
+      "children": number or null,
+      "total": number or null
+    }},
+    "cabin_type": "inside|oceanview|balcony|suite or null",
+    "special_requirements": ["list", "of", "requirements"],
+    "traveler_type": "solo|couple|family|group or null",
+    "atmosphere": ["relaxing", "adventure", "luxury"] or [],
+    "confidence": {{
+      "overall": 0.0-1.0,
+      "per_field": {{"field": confidence}}
+    }}
+  }}
+  ```
+  
+  Return ONLY the JSON, no additional text.
+
+examples:
+  - query: "I want a 7-day Caribbean cruise from Miami in June for 2 adults under $3000"
+    expected:
+      departure_port: "Miami"
+      date_range: "June"
+      duration: 7
+      destination: "Caribbean"
+      budget:
+        max: 3000
+        currency: "USD"
+      travelers:
+        adults: 2
+        total: 2
+      
+  - query: "Looking for a romantic getaway cruise with spa and fine dining"
+    expected:
+      traveler_type: "couple"
+      atmosphere: ["romantic", "luxury", "relaxing"]
+      special_requirements: ["spa", "fine dining"]
+
+# Field descriptions for documentation
+fields:
+  departure_port:
+    description: "City/port where cruise departs from"
+    examples: ["Miami", "Port Canaveral", "Galveston", "Seattle"]
+  
+  date_range:
+    description: "Flexible date range"
+    examples: ["June", "Summer 2026", "Next month", "Early July"]
+  
+  departure_date:
+    description: "Specific departure date"
+    format: "YYYY-MM-DD or natural date"
+    examples: ["2026-07-15", "July 15th", "next Friday"]
+  
+  duration:
+    description: "Number of days/nights for cruise"
+    type: "integer"
+    examples: [3, 7, 10, 14]
+  
+  destination:
+    description: "Geographic destination or region"
+    examples: ["Caribbean", "Alaska", "Mediterranean", "Mexico"]
+  
+  budget:
+    description: "Price constraints per person"
+    fields:
+      min: "Minimum price"
+      max: "Maximum price"
+      currency: "Currency code (default: USD)"
+  
+  cabin_type:
+    description: "Preferred cabin/stateroom type"
+    options: ["inside", "oceanview", "balcony", "suite"]
+  
+  atmosphere:
+    description: "Desired cruise atmosphere/experience"
+    examples: ["relaxing", "adventure", "luxury", "family-friendly", "party", "romantic"]

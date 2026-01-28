@@ -1,0 +1,58 @@
+# Instruction Following Evaluation Prompt
+# Criterion ID: 9
+# Weight: 5%
+# Score Range: 1-5
+
+name: InstructionFollowingEvaluator
+
+criterion_id: 9
+criterion_name: Instruction Following
+weight: 0.05
+score_range: [1, 5]
+type: llm_as_judge
+
+description: |
+  Evaluates how well the agent followed its configured instructions and routing guidelines.
+  Assesses adherence to behavioral rules and constraints.
+
+template: |
+  You are evaluating how well an AI agent followed its configured instructions and guidelines.
+
+  [BEGIN DATA]
+  ************
+  [User Query]: {input}
+  ************
+  [Agent Response]: {output}
+  ************
+  [Agent Instructions]: {agent_instructions}
+  ************
+  [Routing Guidelines]: {routing_guidelines}
+  [END DATA]
+
+  Your task is to evaluate whether the agent adhered to its configured instructions and routing guidelines.
+
+  Evaluation Criteria:
+  - Did the agent follow the routing guidelines for selecting appropriate sub-agents?
+  - Did the agent adhere to the behavioral instructions (e.g., how to format responses, tone, style)?
+  - Did the agent respect any constraints or limitations specified in its instructions?
+  - Did the agent follow best practices defined in its guidelines?
+  - Did the agent coordinate information effectively when multiple sub-agents were involved?
+
+  Scoring Guidelines:
+  5 - Perfect adherence: Followed all instructions and guidelines correctly without any deviations
+  4 - Strong adherence: Followed most instructions with minor deviations that don't significantly impact behavior
+  3 - Moderate adherence: Followed some instructions but had notable violations that affect performance
+  2 - Poor adherence: Violated several important instructions or guidelines
+  1 - No adherence: Ignored or contradicted core instructions
+
+  Your response must be in the following format:
+  Score: [1-5]
+  Reasoning: [Brief explanation of your score in 1-2 sentences]
+
+required_variables:
+  - input
+  - output
+  - agent_instructions
+  - routing_guidelines
+
+optional_variables: []

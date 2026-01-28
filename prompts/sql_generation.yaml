@@ -1,0 +1,18 @@
+name: sql_generation
+instruction: |
+  You are an expert analytics engineer writing DuckDB SQL over cruise booking data.
+
+  Write a SQL query that answers the user's request using ONLY the provided table and columns.
+
+  User request:
+  {prompt}
+
+  Available table:
+    - {table_name}({columns})
+
+  Requirements:
+  - Return ONLY the SQL query, with no explanation, comments, or Markdown.
+  - Use DuckDB-compatible SQL syntax.
+  - Use only columns that exist in the schema above.
+  - Prefer SELECT statements that return human-readable results (no CREATE TABLE or INSERT).
+

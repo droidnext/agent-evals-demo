@@ -1,0 +1,13 @@
+Criterion_ID,Criterion_Name,Type,Description,Scoring_Method,Weight,Min_Score,Max_Score,Applicability
+1,Response Relevance,llm_as_judge,Measures how well response addresses the user query,LLM judges relevance on 1-5 scale,0.15,1,5,Universal - Any conversational agent
+2,Response Completeness,llm_as_judge,Evaluates whether response includes all expected information,LLM judges completeness on 1-5 scale,0.15,1,5,Universal - Any informational agent
+3,Response Coherence,llm_as_judge,Assesses clarity structure and logical flow of response,LLM evaluates coherence on 1-5 scale,0.10,1,5,Universal - Any text-generating agent
+4,Routing Correctness,agent_path,Verifies that correct sub-agents are selected based on query type,F1 score (precision and recall of sub-agent selection),0.20,0,1,Universal - Any multi-agent system
+5,Tool Usage Correctness,code_based,Verifies correct tools are called for each query type,Percentage of correct tool usage,0.10,0,1,Universal - Any tool-using agent
+6,Query Understanding Quality,llm_as_judge,Evaluates how well the agent understands query requirements,LLM judges understanding on 1-5 scale,0.15,1,5,Universal - Any query-driven agent
+7,Agent Path Efficiency,agent_path,Measures efficiency of sub-agent execution (no redundant calls),Ratio = Minimum_Required_Agents / Actual_Agents_Invoked,0.05,0,1,Universal - Any multi-step agent
+8,Sub-Agent Invocation Order,agent_path,Validates logical sequence of sub-agent calls,Binary (logical=1 illogical=0),0.05,0,1,Universal - Any sequential agent
+9,Instruction Following,llm_as_judge,Evaluates how well agent follows routing guidelines from instructions,LLM judges instruction adherence on 1-5 scale,0.05,1,5,Universal - Instruction-based agents
+10,Tool Call Success Rate,code_based,Measures percentage of successful tool calls,Success_Rate = Successful_Calls / Total_Calls,0.00,0,1,Universal - Any tool-using agent (monitored not weighted)
+TOTAL,,,,,1.00,,,
+11,Semantic Search Quality,code_based + llm_as_judge,Evaluates quality of semantic search for preference-based queries,Combined score (code: 0-1 LLM: 1-5 normalized),0.05,0,1,Usecase-Specific - Semantic search systems only

@@ -1,0 +1,60 @@
+# Query Understanding Quality Evaluation Prompt
+# Criterion ID: 6
+# Weight: 15%
+# Score Range: 1-5
+
+name: QueryUnderstandingEvaluator
+
+criterion_id: 6
+criterion_name: Query Understanding Quality
+weight: 0.15
+score_range: [1, 5]
+type: llm_as_judge
+
+description: |
+  Evaluates how well the agent understood the user's query and its underlying intent.
+  Assesses recognition of explicit requirements and implicit needs.
+
+template: |
+  You are evaluating how well an AI agent understood the user's query and its underlying intent.
+
+  [BEGIN DATA]
+  ************
+  [User Query]: {input}
+  ************
+  [Agent Response]: {output}
+  ************
+  [Query Type]: {query_type}
+  [Key Requirements]: {key_requirements}
+  [END DATA]
+
+  Your task is to evaluate whether the agent correctly understood:
+  1. The explicit requirements stated in the query
+  2. The implicit intent and context of the request
+  3. The type of information or action the user needs
+
+  Evaluation Criteria:
+  - Did the agent identify the correct query type (search, recommendation, pricing, itinerary)?
+  - Did the agent recognize all explicit requirements (dates, locations, preferences, constraints)?
+  - Did the agent understand implicit needs (e.g., "family cruise" implies kid-friendly amenities)?
+  - Did the agent's actions and response align with the user's intent?
+  - Did the agent correctly interpret any ambiguous or context-dependent aspects of the query?
+
+  Scoring Guidelines:
+  5 - Perfect understanding: Correctly identified all explicit and implicit requirements, including nuanced intent
+  4 - Strong understanding: Captured main intent with minor missed nuances that don't significantly impact the response
+  3 - Adequate understanding: Understood basic request but missed some important aspects or nuances
+  2 - Poor understanding: Misinterpreted key aspects of the query or missed critical requirements
+  1 - Failed to understand: Completely misunderstood the user's intent or requirements
+
+  Your response must be in the following format:
+  Score: [1-5]
+  Reasoning: [Brief explanation of your score in 1-2 sentences]
+
+required_variables:
+  - input
+  - output
+  - query_type
+  - key_requirements
+
+optional_variables: []

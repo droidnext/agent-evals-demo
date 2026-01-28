@@ -1,0 +1,70 @@
+# Semantic Search Quality Evaluation Prompt
+# Criterion ID: 11
+# Weight: 5%
+# Score Range: 1-5 (LLM component, combined with code-based metrics)
+
+name: SemanticSearchQualityEvaluator
+
+criterion_id: 11
+criterion_name: Semantic Search Quality
+weight: 0.05
+score_range: [1, 5]
+type: llm_as_judge
+
+description: |
+  Evaluates the quality and appropriateness of semantic search usage.
+  Usecase-specific criterion for agents with semantic/vector search capabilities.
+
+template: |
+  You are evaluating the quality and appropriateness of semantic search usage in an AI agent's response.
+
+  [BEGIN DATA]
+  ************
+  [User Query]: {input}
+  ************
+  [Agent Response]: {output}
+  ************
+  [Search Actions Taken]: {search_actions}
+  ************
+  [Semantic Search Used]: {semantic_search_used}
+  [Semantic Search Results]: {semantic_search_results}
+  [END DATA]
+
+  Your task is to evaluate whether semantic search was used appropriately and effectively.
+
+  Evaluation Criteria:
+
+  **Appropriateness (Should semantic search be used?)**
+  - ✅ Use semantic search for: natural language descriptions, amenities, themes, experiences, preferences
+    (e.g., "romantic cruise with spa", "family-friendly adventure", "luxurious relaxation", "something special")
+  - ❌ Don't use semantic search for: structured criteria, specific dates/locations, pricing, exact matches
+    (e.g., "7-day cruise from Miami", "departing June 2026", "under $2000", "cruise ID 12345")
+
+  **Effectiveness (If used, was it effective?)**
+  - Were the semantic search results relevant to the user's preferences and intent?
+  - Did the agent interpret the natural language query correctly for the search?
+  - Were the results appropriately used in the final response?
+  - Did the agent effectively combine semantic search with structured search when needed?
+
+  Scoring Guidelines:
+  5 - Optimal usage: Semantic search was appropriately used (or not used) and results were highly relevant and well-integrated
+  4 - Good usage: Correct decision on usage with mostly relevant results that contribute to the response
+  3 - Acceptable usage: Used correctly but results were only moderately relevant, or missed an opportunity to use it effectively
+  2 - Poor usage: Misused semantic search for structured queries, or results were not relevant to user needs
+  1 - Incorrect usage: Completely inappropriate use or failure to use when clearly needed for preference-based queries
+
+  Your response must be in the following format:
+  Score: [1-5]
+  Reasoning: [Brief explanation of your score in 1-2 sentences]
+
+required_variables:
+  - input
+  - output
+  - search_actions
+  - semantic_search_used
+  - semantic_search_results
+
+optional_variables: []
+
+applicability: usecase_specific
+applicable_when: Agent uses semantic/vector search for preference-based queries

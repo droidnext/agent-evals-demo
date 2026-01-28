@@ -1,0 +1,53 @@
+# Response Coherence Evaluation Prompt
+# Criterion ID: 3
+# Weight: 10%
+# Score Range: 1-5
+
+name: ResponseCoherenceEvaluator
+
+criterion_id: 3
+criterion_name: Response Coherence
+weight: 0.10
+score_range: [1, 5]
+type: llm_as_judge
+
+description: |
+  Assesses the clarity, structure, and logical flow of the agent's response.
+  Evaluates professional presentation and ease of understanding.
+
+template: |
+  You are evaluating the coherence, clarity, and structure of an AI agent's response.
+
+  [BEGIN DATA]
+  ************
+  [User Query]: {input}
+  ************
+  [Agent Response]: {output}
+  [END DATA]
+
+  Your task is to evaluate the clarity, logical flow, and overall structure of the agent's response.
+
+  Evaluation Criteria:
+  - Is the response well-structured and easy to follow?
+  - Does the information flow logically from one point to the next?
+  - Is the language clear and professional?
+  - Are formatting and organization appropriate (e.g., use of bullet points, sections)?
+  - Are there any confusing statements or contradictions?
+  - Is the response cohesive with smooth transitions between ideas?
+
+  Scoring Guidelines:
+  5 - Excellent coherence: Clear, well-structured, professional, and easy to understand with smooth flow
+  4 - Good coherence: Generally clear and logical with minor structural issues that don't significantly impact understanding
+  3 - Moderate coherence: Understandable but has organizational or clarity issues that make it harder to follow
+  2 - Poor coherence: Difficult to follow, disorganized, or contains confusing statements or contradictions
+  1 - Incoherent: Disjointed, illogical, or incomprehensible
+
+  Your response must be in the following format:
+  Score: [1-5]
+  Reasoning: [Brief explanation of your score in 1-2 sentences]
+
+required_variables:
+  - input
+  - output
+
+optional_variables: []

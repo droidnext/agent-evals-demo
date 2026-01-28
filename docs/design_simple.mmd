@@ -1,0 +1,22 @@
+flowchart TB
+    User([User]) --> Root[CruiseBookingAgent]
+    Root --> I[ItinerarySearchAgent]
+    Root --> P[PricingAvailabilityAgent]
+    Root --> S[SemanticSearchAgent]
+    Root --> R[RecommendationAgent]
+
+    I --> DS[DataSearch]
+    P --> DS
+    R --> DS
+    S --> VS[ChromaDB + BGE]
+    R --> VS
+
+    DS --> Data[(cruises + pricing)]
+    VS --> Data
+
+    Root --> User
+
+    style Root fill:#4a90d9,color:#fff
+    style I,P,S,R fill:#7cb342,color:#fff
+    style DS,VS fill:#ffb74d
+    style Data fill:#e0e0e0
