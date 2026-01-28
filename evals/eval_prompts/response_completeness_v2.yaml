@@ -24,6 +24,7 @@ template: |
   ************
   [Agent Response]: {output}
   ************
+  # [Expected Information]: {expected_info}
   [END DATA]
 
   Your task is to evaluate whether the agent's response includes all necessary information to fully answer the user's query.
@@ -49,5 +50,6 @@ template: |
 required_variables:
   - input
   - output
+  - expected_info
 
 optional_variables: []
