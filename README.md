@@ -3,6 +3,11 @@
 ## Using This Example for AI Evaluations Demo
 
 This cruise booking agent is set up as an **AI evaluation example**: multi-agent routing, tool use, and structured outputs make it suitable for demonstrating **evaluation methodologies** and **eval infrastructure**.
+
+blog
+https://medium.com/@droidnext/ai-evaluation-harness-a-practical-guide-for-building-reliable-agents-fa59c70dac1e
+
+
 ## Architecture
 
 ![Cruise Booking Agent Architecture](docs/assets/cruise_booking_architecture.png)
