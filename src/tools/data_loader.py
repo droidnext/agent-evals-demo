@@ -87,8 +87,8 @@ class DataLoader:
                 batch = self.cruises[i:i + batch_size]
                 # Convert to format suitable for vector store
                 documents = [json.dumps(cruise) for cruise in batch]
-                # Use id (document id) if available, otherwise cruise_id or fallback
-                ids = [cruise.get("id", cruise.get("cruise_id", f"cruise_{i+j}"))
+                # Use cruise_id if available, otherwise use fallback
+                ids = [cruise.get("cruise_id", cruise.get("id", f"cruise_{i+j}")) 
                        for j, cruise in enumerate(batch)]
                 
                 vector_store.add_documents(documents=documents, ids=ids)
@@ -122,7 +122,7 @@ class DataLoader:
             
             # Check for required fields (flexible field names)
             required_fields = [
-                ("id", "cruise_id"),  # id (primary) or cruise_id
+                ("cruise_id", "id"),  # cruise_id or id
                 ("ship_name", "name"),  # ship_name or name
                 "departure_port"
             ]

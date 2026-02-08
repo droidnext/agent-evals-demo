@@ -40,12 +40,12 @@ def search_cruises(sql_query: str) -> List[Dict[str, Any]]:
     
     Args:
         sql_query: DuckDB-compatible SQL query that references tables:
-            - cruises: main cruise metadata with columns: id, ship_name, departure_port,
-              departure_date, duration (in days), destination, ports_of_call, cabin_type,
+            - cruises: main cruise metadata with columns: cruise_id, ship_name, departure_port, 
+              departure_date, duration (in days), destination, ports_of_call, cabin_type, 
               price_per_person, total_price, availability, amenities, description
-            - pricing: pricing information with columns: id (or cruise_id), starting_price (if available)
+            - pricing: pricing information with columns: cruise_id, starting_price (if available)
     
-    Note: Use exact column names as listed above. The cruises table uses 'id' for the cruise identifier. The 'duration' column contains days (not 'duration_days').
+    Note: Use exact column names as listed above. The 'duration' column contains days (not 'duration_days').
     
     Returns:
         List of result rows as dictionaries.

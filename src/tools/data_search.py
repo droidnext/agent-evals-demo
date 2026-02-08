@@ -88,8 +88,8 @@ class DataSearch:
             if len(cruises_df.columns) > 0:
                 con.register("cruises", cruises_df)
             else:
-                # Create empty DataFrame with expected schema for cruises (id = document id)
-                con.register("cruises", pd.DataFrame(columns=["id", "ship_name", "departure_port"]))
+                # Create empty DataFrame with expected schema for cruises
+                con.register("cruises", pd.DataFrame(columns=["cruise_id", "ship_name", "departure_port"]))
             
             # Register pricing table - ensure it has at least one column for DuckDB
             if len(pricing_df.columns) > 0:
@@ -128,7 +128,7 @@ class DataSearch:
     def get_cruise_by_id(self, cruise_id: str) -> Optional[Dict[str, Any]]:
         """Get a specific cruise by ID."""
         for cruise in self.cruises:
-            if cruise.get("id") == cruise_id or cruise.get("cruise_id") == cruise_id:
+            if cruise.get("cruise_id") == cruise_id or cruise.get("id") == cruise_id:
                 return cruise
         return None
     
@@ -137,9 +137,8 @@ class DataSearch:
         if self.pricing_df is None or self.pricing_df.empty:
             return None
         
-        # Pricing table may use 'id' or 'cruise_id' for the cruise identifier
-        id_col = "id" if "id" in self.pricing_df.columns else "cruise_id"
-        matches = self.pricing_df[self.pricing_df[id_col] == cruise_id]
+        # Search in pricing DataFrame
+        matches = self.pricing_df[self.pricing_df.get("cruise_id", "") == cruise_id]
         if not matches.empty:
             return matches.iloc[0].to_dict()
         return None
@@ -161,12 +160,11 @@ class DataSearch:
         if max_price is not None:
             filtered_df = filtered_df[filtered_df["starting_price"] <= max_price]
         
-        # Get cruise IDs (pricing table may use 'id' or 'cruise_id')
-        id_col = "id" if "id" in filtered_df.columns else "cruise_id"
-        cruise_ids = filtered_df[id_col].tolist()[:limit]
+        # Get cruise IDs
+        cruise_ids = filtered_df["cruise_id"].tolist()[:limit]
         
-        # Return matching cruises (documents use 'id', support legacy 'cruise_id')
-        return [c for c in self.cruises if c.get("id") in cruise_ids or c.get("cruise_id") in cruise_ids]
+        # Return matching cruises
+        return [c for c in self.cruises if c.get("cruise_id") in cruise_ids or c.get("id") in cruise_ids]
     
     def get_all_cruises(self, limit: Optional[int] = None) -> List[Dict[str, Any]]:
         """Get all cruises."""
@@ -187,9 +185,9 @@ class DataSearch:
             cruises_df = pd.DataFrame(self.cruises)
             schema["cruises"] = cruises_df.columns.tolist()
         else:
-            # Default schema if no data loaded (id = document/cruise identifier)
+            # Default schema if no data loaded
             schema["cruises"] = [
-                "id", "ship_name", "departure_port", "departure_date",
+                "cruise_id", "ship_name", "departure_port", "departure_date",
                 "duration", "destination", "ports_of_call", "cabin_type",
                 "price_per_person", "total_price", "availability", "amenities", "description"
             ]
@@ -198,8 +196,8 @@ class DataSearch:
         if self.pricing_df is not None and not self.pricing_df.empty:
             schema["pricing"] = self.pricing_df.columns.tolist()
         else:
-            # Default schema if no data loaded (id or cruise_id)
-            schema["pricing"] = ["id", "starting_price"]
+            # Default schema if no data loaded
+            schema["pricing"] = ["cruise_id", "starting_price"]
         
         return schema
     
