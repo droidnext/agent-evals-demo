@@ -16,12 +16,20 @@ from src.models.structured_llm import RootStructuredResponse
 MODEL = get_model_instance()
 INSTRUCTION = load_agent_instruction('root_agent')
 
+# Reinforce bounded behavior: use tools/sub-agents only when needed, then respond.
+# RunConfig.max_llm_calls (passed at run time via Runner.run_async) enforces hard limits.
+_instruction_suffix = """
+
+After you have enough information from sub-agents or tools, produce your structured response. Do not call the same tool or sub-agent repeatedly for the same purpose. Prefer one round of delegation then respond."""
+ROOT_INSTRUCTION = INSTRUCTION.rstrip() + _instruction_suffix
+
 # Root agent: own output_schema and output_key (ADK: per-agent structured output).
 # With tools, ADK injects set_model_response; result stored in session state.
 root_agent = Agent(
     model=MODEL,
     name='CruiseBookingAgent',
-    instruction=INSTRUCTION,
+    instruction=ROOT_INSTRUCTION,
+    description='Main orchestrator for cruise booking; routes to sub-agents and returns structured responses.',
     output_schema=RootStructuredResponse,
     output_key='root_structured_response',
     sub_agents=[
