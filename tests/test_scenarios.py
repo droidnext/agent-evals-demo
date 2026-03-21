@@ -29,6 +29,8 @@ import json
 import asyncio
 import argparse
 import time
+import os
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -39,6 +41,7 @@ load_dotenv()
 
 PROJECT_ROOT = Path(__file__).parent.parent
 SCENARIOS_DIR = Path(__file__).parent / "scenarios"
+REPORTS_DIR = Path(__file__).parent / "reports"
 
 sys.path.insert(0, str(PROJECT_ROOT / "agents"))
 
@@ -234,6 +237,117 @@ Respond in exactly this JSON format (no markdown fences):
         return {"pass": False, "reason": f"Judge error: {e}"}
 
 
+def _generate_reports(
+    results: list[dict[str, Any]],
+    run_meta: dict[str, Any],
+    report_dir: Path,
+) -> tuple[Path, Path]:
+    """Write JSON and Markdown reports for the test run. Returns (json_path, md_path)."""
+    report_dir.mkdir(parents=True, exist_ok=True)
+    ts = run_meta["timestamp"]
+    slug = ts.replace(":", "").replace("-", "").replace("T", "_").split("+")[0]
+
+    # --- JSON report (full structured data) ---
+    json_path = report_dir / f"report_{slug}.json"
+    json_payload = {
+        "meta": run_meta,
+        "scenarios": results,
+    }
+    with open(json_path, "w") as f:
+        json.dump(json_payload, f, indent=2, default=str)
+
+    # --- Markdown report (human-readable) ---
+    md_path = report_dir / f"report_{slug}.md"
+    lines: list[str] = []
+
+    total = len(results)
+    judged = [r for r in results if r["passed"] is not None]
+    passed_count = sum(1 for r in judged if r["passed"])
+    failed_count = len(judged) - passed_count
+
+    lines.append(f"# Scenario Test Report")
+    lines.append("")
+    lines.append(f"**Date:** {run_meta['timestamp']}  ")
+    lines.append(f"**Model:** {run_meta.get('model', 'unknown')}  ")
+    lines.append(f"**Judge model:** {run_meta.get('judge_model', 'unknown')}  ")
+    lines.append(f"**Total duration:** {run_meta['total_duration_ms']:.0f} ms  ")
+    lines.append("")
+
+    # Summary table
+    lines.append("## Summary")
+    lines.append("")
+    lines.append(f"| Metric | Value |")
+    lines.append(f"|--------|-------|")
+    lines.append(f"| Scenarios run | {total} |")
+    lines.append(f"| Scenarios passed | {passed_count} |")
+    lines.append(f"| Scenarios failed | {failed_count} |")
+    if judged:
+        lines.append(f"| Pass rate | {passed_count / len(judged) * 100:.0f}% |")
+    lines.append("")
+
+    # Per-scenario detail
+    lines.append("## Scenarios")
+    lines.append("")
+    for r in results:
+        status_icon = {True: "PASS", False: "FAIL", None: "---"}[r["passed"]]
+        lines.append(f"### [{status_icon}] {r['title']}")
+        lines.append("")
+        lines.append(f"**File:** `{r['file']}`  ")
+        lines.append(f"**Turns:** {r['total_turns']}  ")
+        lines.append(f"**Duration:** {r['total_ms']:.0f} ms  ")
+        lines.append("")
+
+        # Turn results table
+        lines.append("| Turn | Input | Verdict | Reason | Time (ms) | Sub-agents |")
+        lines.append("|------|-------|---------|--------|-----------|------------|")
+        for t in r["turn_results"]:
+            raw = t["input"]
+            input_text = raw if isinstance(raw, str) else raw.get("text", str(raw))
+            short_input = (input_text[:60] + "...") if len(input_text) > 60 else input_text
+            short_input = short_input.replace("|", "\\|")
+
+            if t["judge"]:
+                verdict = "PASS" if t["judge"]["pass"] else "FAIL"
+                reason = t["judge"].get("reason", "").replace("|", "\\|")
+                short_reason = (reason[:80] + "...") if len(reason) > 80 else reason
+            else:
+                verdict = "---"
+                short_reason = ""
+
+            agents = ", ".join(t["sub_agents"]) if t["sub_agents"] else "—"
+            lines.append(
+                f"| {t['turn']} | {short_input} | {verdict} | {short_reason} "
+                f"| {t['elapsed_ms']:.0f} | {agents} |"
+            )
+        lines.append("")
+
+        # Failed turns detail
+        failed_turns = [t for t in r["turn_results"] if t["judge"] and not t["judge"]["pass"]]
+        if failed_turns:
+            lines.append("<details>")
+            lines.append("<summary>Failed turn details</summary>")
+            lines.append("")
+            for t in failed_turns:
+                raw = t["input"]
+                input_text = raw if isinstance(raw, str) else raw.get("text", str(raw))
+                lines.append(f"**Turn {t['turn']}:** {input_text}")
+                lines.append("")
+                lines.append(f"*Expected:* {t['expected']}")
+                lines.append("")
+                resp_preview = t["response"][:400] + "..." if len(t["response"]) > 400 else t["response"]
+                lines.append(f"*Response:* {resp_preview}")
+                lines.append("")
+                lines.append(f"*Judge:* {t['judge']['reason']}")
+                lines.append("")
+            lines.append("</details>")
+            lines.append("")
+
+    with open(md_path, "w") as f:
+        f.write("\n".join(lines))
+
+    return json_path, md_path
+
+
 async def main():
     parser = argparse.ArgumentParser(
         description="Run multi-turn agent test scenarios",
@@ -249,6 +363,13 @@ async def main():
     )
     parser.add_argument(
         "--no-judge", action="store_true", help="Skip LLM-as-judge evaluation"
+    )
+    parser.add_argument(
+        "--report-dir", type=str, default=str(REPORTS_DIR),
+        help=f"Directory for JSON/Markdown reports (default: {REPORTS_DIR})"
+    )
+    parser.add_argument(
+        "--no-report", action="store_true", help="Skip writing report files"
     )
     args = parser.parse_args()
 
@@ -266,6 +387,8 @@ async def main():
             print(f"    Turns: {len(s['turns'])}")
             print(f"    {s['description'].strip()}\n")
         return 0
+
+    run_start = time.time()
 
     from cruise_booking import root_agent
     from google.adk.runners import Runner
@@ -289,6 +412,9 @@ async def main():
         )
         results.append(result)
 
+    run_end = time.time()
+    total_duration_ms = (run_end - run_start) * 1000
+
     print(f"\n{'=' * 80}")
     print("MULTI-TURN TEST SUMMARY")
     print(f"{'=' * 80}")
@@ -308,7 +434,27 @@ async def main():
     if judged:
         print(f"\n  {passed}/{len(judged)} scenarios passed")
 
-    print(f"  {total} scenario(s) executed\n")
+    print(f"  {total} scenario(s) executed")
+    print(f"  Total duration: {total_duration_ms:.0f}ms\n")
+
+    # Generate reports
+    if not args.no_report:
+        judge_model = os.getenv("JUDGE_MODEL", os.getenv("LLM_MODEL", "gpt-4.1-mini"))
+        run_meta = {
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "model": os.getenv("LLM_MODEL", "unknown"),
+            "judge_model": judge_model,
+            "scenarios_run": total,
+            "scenarios_passed": passed,
+            "scenarios_failed": len(judged) - passed,
+            "total_duration_ms": total_duration_ms,
+        }
+        report_dir = Path(args.report_dir)
+        json_path, md_path = _generate_reports(results, run_meta, report_dir)
+        print(f"  Reports written:")
+        print(f"    JSON: {json_path}")
+        print(f"    Markdown: {md_path}\n")
+
     return 0 if all(r["passed"] for r in judged) else 1
 
 
