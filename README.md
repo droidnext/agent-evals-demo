@@ -69,6 +69,14 @@ If you don't already have it installed, install it first (see the [official ADK 
 pip install google-adk
 ```
 
+### Import Google ADK skills (Cursor)
+
+To add the official [Google ADK documentation skills](https://google.github.io/adk-docs/skills/) for Cursor:
+
+```bash
+npx skills add google/adk-docs/skills -y --agent cursor
+```
+
 ### Project dependencies
 
 1. Install dependencies:
