@@ -8,7 +8,7 @@ from typing import List, Dict, Any, Optional
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 
 from src.tools.data_search import DataSearch
-from ..config import tracer
+from ..tracing_util import tracer
 from ..prompt_loader import get_prompt_loader
 
 # Initialize data search
@@ -45,7 +45,12 @@ def search_cruises(sql_query: str) -> List[Dict[str, Any]]:
               price_per_person, total_price, availability, amenities, description
             - pricing: pricing information with columns: cruise_id, starting_price (if available)
     
-    Note: Use exact column names as listed above. The 'duration' column contains days (not 'duration_days').
+    Data model notes:
+    - Each ship has multiple rows, one per cabin_type (Interior, Oceanview, Balcony, Suite).
+    - cruise_id encodes the cabin type suffix, e.g. CRUISE_003_INT, CRUISE_003_BAL.
+    - To find all cabin types for a ship: WHERE ship_name = '...'
+    - To find the cheapest option per ship: GROUP BY ship_name, use MIN(price_per_person)
+    - The 'duration' column contains days (not 'duration_days').
     
     Returns:
         List of result rows as dictionaries.
@@ -150,3 +155,37 @@ def get_data_stats() -> Dict[str, Any]:
         Dictionary with counts and summary statistics.
     """
     return _data_search.get_stats()
+
+
+@tracer.tool
+def escalate_to_human(reason: str, context: str = "") -> Dict[str, str]:
+    """
+    Transfer the conversation to a human booking agent.
+
+    Call this when:
+    - The user explicitly asks to speak to a person or human agent
+    - The user is frustrated and the AI cannot resolve their issue
+    - A booking or payment needs to be finalized
+    - The query is outside the AI agent's capabilities
+
+    Args:
+        reason: Why the conversation is being escalated (e.g. "user requested human agent",
+                "booking finalization", "user frustrated with responses").
+        context: Summary of the conversation so far to hand off to the human agent.
+
+    Returns:
+        Confirmation message with a reference number for the handoff.
+    """
+    import uuid
+    ref = str(uuid.uuid4())[:8].upper()
+    return {
+        "status": "escalated",
+        "reference": ref,
+        "message": (
+            f"I've initiated a transfer to a human booking agent (ref: {ref}). "
+            "They'll have the full context of our conversation. "
+            "A team member will be with you shortly — typically within 2-3 minutes."
+        ),
+        "reason": reason,
+        "context": context,
+    }

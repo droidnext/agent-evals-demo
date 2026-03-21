@@ -40,122 +40,6 @@ PHOENIX_COLLECTOR_ENDPOINT = os.getenv('PHOENIX_COLLECTOR_ENDPOINT', 'https://ap
 is_local_phoenix = 'localhost' in PHOENIX_COLLECTOR_ENDPOINT or '127.0.0.1' in PHOENIX_COLLECTOR_ENDPOINT
 PHOENIX_ENABLED = is_local_phoenix or bool(PHOENIX_API_KEY)
 
-# No-op tracer for when Phoenix is disabled
-class NoOpTracer:
-    """No-op tracer when Phoenix is not available."""
-    def chain(self, func):
-        return func
-    def tool(self, func):
-        return func
-    def agent(self, func):
-        return func
-    def llm(self, func):
-        return func
-    def start_as_current_span(self, *args, **kwargs):
-        from contextlib import nullcontext
-        return nullcontext()
-
-# Initialize Phoenix tracing if enabled
-_tracer_provider = None
-tracer = NoOpTracer()  # Default to no-op tracer
-
-if PHOENIX_ENABLED:
-    try:
-        from phoenix.otel import register
-        
-        print("🔄 Initializing Phoenix tracing...")
-        
-        # Register Phoenix OTEL with auto-instrumentation and batching
-        # For local Phoenix: use gRPC (default port 4317)
-        # For cloud Phoenix: specify full HTTP endpoint
-        if is_local_phoenix:
-            # Local Phoenix uses gRPC by default
-            _tracer_provider = register(
-                project_name=PHOENIX_PROJECT_NAME,
-                batch=True,
-                auto_instrument=True,
-                set_global_tracer_provider=False
-            )
-        else:
-            # Cloud Phoenix uses HTTP with API key
-            _tracer_provider = register(
-                project_name=PHOENIX_PROJECT_NAME,
-                endpoint=PHOENIX_COLLECTOR_ENDPOINT,
-                headers={"api_key": PHOENIX_API_KEY} if PHOENIX_API_KEY else {},
-                batch=True,
-                auto_instrument=True,
-                set_global_tracer_provider=False
-            )
-
-        # Add Phoenix Arize auto-instrumentation for LiteLLM and Google ADK.
-        # BaseInstrumentor.instrument is an instance method, so we must instantiate
-        # the instrumentors instead of calling instrument() on the class itself.
-        from openinference.instrumentation.litellm import LiteLLMInstrumentor
-        from openinference.instrumentation.google_adk import GoogleADKInstrumentor
-
-        LiteLLMInstrumentor().instrument(tracer_provider=_tracer_provider)
-        GoogleADKInstrumentor().instrument(tracer_provider=_tracer_provider)
-        
-        # Get a tracer for manual instrumentation with decorators
-        # Use __name__ to create module-specific tracer
-        tracer = _tracer_provider.get_tracer(__name__)
-        
-        # Also set it in the phoenix_tracer module for global access
-        try:
-            from src.utils import phoenix_tracer
-            phoenix_tracer.set_tracer(tracer)
-        except ImportError:
-            pass  # phoenix_tracer module not available
-        
-        print(f"✅ Phoenix tracing initialized!")
-        print(f"   Endpoint: {PHOENIX_COLLECTOR_ENDPOINT}")
-        print(f"   Project: {PHOENIX_PROJECT_NAME}")
-        print(f"   Batch processing: ✅")
-        print(f"   Auto-instrumentation: ✅")
-        print(f"   Manual instrumentation: ✅ (decorators available)")
-        
-    except ImportError as e:
-        print(f"⚠️  Phoenix packages not installed: {e}")
-        print("   Install with: uv pip install arize-phoenix")
-        PHOENIX_ENABLED = False
-    except Exception as e:
-        print(f"⚠️  Phoenix initialization failed: {e}")
-        import traceback
-        traceback.print_exc()
-        PHOENIX_ENABLED = False
-        tracer = NoOpTracer()  # Fallback to no-op
-else:
-    print("ℹ️  Phoenix tracing disabled")
-    tracer = NoOpTracer()  # Use no-op tracer
-
-
-def verify_phoenix_instrumentation():
-    """Verify that Phoenix instrumentation is active."""
-    if not PHOENIX_ENABLED:
-        return {"enabled": False, "reason": "Phoenix not enabled"}
-    
-    if _tracer_provider is None:
-        return {"enabled": False, "reason": "Tracer provider not initialized"}
-    
-    try:
-        from opentelemetry import trace as trace_api
-        tracer_provider = trace_api.get_tracer_provider()
-        
-        # Check if we have a valid tracer provider
-        if tracer_provider and hasattr(tracer_provider, '_active_span_processor'):
-            return {
-                "enabled": True,
-                "endpoint": PHOENIX_COLLECTOR_ENDPOINT,
-                "project": PHOENIX_PROJECT_NAME,
-                "auto_instrumentation": True,
-                "batch_processing": True,
-                "status": "active"
-            }
-        else:
-            return {"enabled": False, "reason": "Tracer provider not properly configured"}
-    except Exception as e:
-        return {"enabled": False, "reason": f"Verification error: {e}"}
-
 
 def get_model_instance(model: str = None):
     """
@@ -258,8 +142,6 @@ def get_model_instance(model: str = None):
         )
 
 
-
-
 def get_model_name() -> str:
     """Get the configured LLM model name."""
     return LLM_MODEL
@@ -268,25 +150,6 @@ def get_model_name() -> str:
 def get_model_config() -> dict:
     """Get the full model configuration."""
     return MODEL_CONFIG.copy()
-
-
-def get_tracer():
-    """
-    Get the Phoenix tracer for manual instrumentation.
-    
-    Use this tracer with decorators like @tracer.tool, @tracer.chain, etc.
-    Returns None if Phoenix is disabled.
-    
-    Example:
-        from config import get_tracer
-        
-        tracer = get_tracer()
-        if tracer:
-            @tracer.tool
-            def my_function():
-                pass
-    """
-    return tracer
 
 
 def _setup_litellm_debug():

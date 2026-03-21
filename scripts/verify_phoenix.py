@@ -12,8 +12,10 @@ print("Phoenix Tracing Verification")
 print("=" * 60)
 print()
 
-# Import config to trigger initialization
+# Import config for Phoenix settings, tracing_util for initialization & verification
 from cruise_booking import config
+from cruise_booking import tracing_util
+tracing_util.initialize_tracing()
 
 print()
 print("📊 Configuration Status:")
@@ -24,9 +26,9 @@ print(f"  PHOENIX_PROJECT: {config.PHOENIX_PROJECT_NAME}")
 print()
 
 # Verify instrumentation
-if hasattr(config, 'verify_phoenix_instrumentation'):
+if hasattr(tracing_util, 'verify_phoenix_instrumentation'):
     print("🔍 Instrumentation Status:")
-    status = config.verify_phoenix_instrumentation()
+    status = tracing_util.verify_phoenix_instrumentation()
     
     if status.get("enabled"):
         print("  ✅ Phoenix tracing is ACTIVE")

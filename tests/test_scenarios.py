@@ -46,11 +46,20 @@ REPORTS_DIR = Path(__file__).parent / "reports"
 sys.path.insert(0, str(PROJECT_ROOT / "agents"))
 
 
-def load_scenarios(filter_title: str | None = None) -> list[dict[str, Any]]:
-    """Load scenario index from scenarios.yaml and attach turn data from each JSON."""
+def load_scenarios(filter_title: str | None = None) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    """Load scenario config from scenarios.yaml and attach turn data from each JSON.
+
+    Returns (config, scenarios) where config contains top-level keys like
+    app_name and user_id.
+    """
     index_path = SCENARIOS_DIR / "scenarios.yaml"
     with open(index_path) as f:
         index = yaml.safe_load(f)
+
+    config = {
+        "app_name": index.get("app_name", "cruise_booking_multi_turn"),
+        "user_id": index.get("user_id", "multi_turn_test_user"),
+    }
 
     scenarios = []
     for entry in index["scenarios"]:
@@ -68,13 +77,14 @@ def load_scenarios(filter_title: str | None = None) -> list[dict[str, Any]]:
             "turns": turns,
         })
 
-    return scenarios
+    return config, scenarios
 
 
 async def run_scenario(
     runner,
     session_service,
     scenario: dict[str, Any],
+    config: dict[str, Any],
     verbose: bool = False,
     use_judge: bool = True,
 ) -> dict[str, Any]:
@@ -85,6 +95,8 @@ async def run_scenario(
     """
     from google.genai import types
 
+    app_name = config["app_name"]
+    user_id = config["user_id"]
     title = scenario["title"]
     turns = scenario["turns"]
 
@@ -95,8 +107,8 @@ async def run_scenario(
     print(f"{'=' * 80}")
 
     session = await session_service.create_session(
-        app_name="cruise_booking_multi_turn",
-        user_id="multi_turn_test_user",
+        app_name=app_name,
+        user_id=user_id,
     )
 
     turn_results = []
@@ -128,7 +140,7 @@ async def run_scenario(
         sub_agents_used: set[str] = set()
 
         async for event in runner.run_async(
-            user_id="multi_turn_test_user",
+            user_id=user_id,
             session_id=session.id,
             new_message=content,
         ):
@@ -180,6 +192,7 @@ async def run_scenario(
     summary = {
         "title": title,
         "file": scenario["file"],
+        "session_id": session.id,
         "total_turns": len(turns),
         "total_ms": total_ms,
         "turn_results": turn_results,
@@ -293,6 +306,7 @@ def _generate_reports(
         lines.append(f"### [{status_icon}] {r['title']}")
         lines.append("")
         lines.append(f"**File:** `{r['file']}`  ")
+        lines.append(f"**Session ID:** `{r['session_id']}`  ")
         lines.append(f"**Turns:** {r['total_turns']}  ")
         lines.append(f"**Duration:** {r['total_ms']:.0f} ms  ")
         lines.append("")
@@ -373,7 +387,7 @@ async def main():
     )
     args = parser.parse_args()
 
-    scenarios = load_scenarios(filter_title=args.scenario)
+    config, scenarios = load_scenarios(filter_title=args.scenario)
 
     if not scenarios:
         print("No matching scenarios found.")
@@ -390,13 +404,16 @@ async def main():
 
     run_start = time.time()
 
+    from cruise_booking.tracing_util import initialize_tracing
+    initialize_tracing()
+
     from cruise_booking import root_agent
     from google.adk.runners import Runner
     from google.adk.sessions import InMemorySessionService
 
     session_service = InMemorySessionService()
     runner = Runner(
-        app_name="cruise_booking_multi_turn",
+        app_name=config["app_name"],
         agent=root_agent,
         session_service=session_service,
     )
@@ -407,6 +424,7 @@ async def main():
             runner,
             session_service,
             scenario,
+            config=config,
             verbose=args.verbose,
             use_judge=not args.no_judge,
         )

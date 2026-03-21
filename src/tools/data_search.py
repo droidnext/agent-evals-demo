@@ -109,7 +109,7 @@ class DataSearch:
                     return value.item()
                 return value
 
-            result_df = result_df.applymap(_to_serializable)
+            result_df = result_df.map(_to_serializable)
             logger.info(f"Executed SQL query, returned {len(result_df)} rows")
             return result_df.to_dict(orient="records")
         except Exception as e:

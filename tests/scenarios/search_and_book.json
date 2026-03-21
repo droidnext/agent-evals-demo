@@ -42,6 +42,6 @@
       "role": "user",
       "text": "That sounds great. What cabin types are available and how do I book?"
     },
-    "expected": "Agent should provide cabin type options (interior, ocean view, balcony, suite) with pricing differences, and explain the booking process or next steps. Should stay in context of the selected cruise."
+    "expected": "Agent should list the available cabin types (e.g., Interior, Oceanview, Balcony, Suite) with their per-person prices for the selected cruise, and offer to connect the user with a human agent for booking assistance."
   }
 ]

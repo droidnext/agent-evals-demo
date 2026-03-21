@@ -9,7 +9,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 
 from src.tools.semantic_search import SemanticSearch
 from src.tools.vector_store import VectorStore
-from ..config import tracer
+from ..tracing_util import tracer
 
 # Initialize search components
 _vector_store = VectorStore()
