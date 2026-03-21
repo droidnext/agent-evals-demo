@@ -1,0 +1,57 @@
+[
+  {
+    "turn": 1,
+    "input": {
+      "role": "user",
+      "text": "I can't decide between a Caribbean cruise and a Mediterranean cruise. Can you help me compare?",
+      "parameters": {
+        "destinations": ["Caribbean", "Mediterranean"],
+        "intent": "comparison"
+      }
+    },
+    "expected": "Agent should engage the recommendation sub-agent to provide a high-level comparison of Caribbean vs Mediterranean cruises covering aspects like weather, ports, activities, and typical pricing."
+  },
+  {
+    "turn": 2,
+    "input": {
+      "role": "user",
+      "text": "What time of year is best for each?"
+    },
+    "expected": "Agent should provide seasonal recommendations for both destinations — e.g., Caribbean is year-round with hurricane season caveats, Mediterranean is best May through October. Should maintain the comparison framing."
+  },
+  {
+    "turn": 3,
+    "input": {
+      "role": "user",
+      "text": "We're planning for August. Which would you recommend?",
+      "parameters": {
+        "travel_month": "August"
+      }
+    },
+    "expected": "Agent should give a recommendation considering August weather and crowds for both regions. Should reference the comparison context and provide a clear opinion with reasoning."
+  },
+  {
+    "turn": 4,
+    "input": {
+      "role": "user",
+      "text": "OK, show me Mediterranean options for August then",
+      "parameters": {
+        "destination": "Mediterranean",
+        "travel_month": "August"
+      }
+    },
+    "expected": "Agent should search for Mediterranean cruises in August, reflecting that the user has made a decision based on the prior comparison. Should route to search sub-agent with the right filters."
+  },
+  {
+    "turn": 5,
+    "input": {
+      "role": "user",
+      "text": "How do prices compare between a balcony cabin and a suite on those?",
+      "parameters": {
+        "cabin_types": ["balcony", "suite"],
+        "intent": "pricing_comparison"
+      }
+    },
+    "expected": "Agent should provide pricing comparisons for balcony vs suite cabins on the Mediterranean cruises from the previous turn. Should use the pricing sub-agent while referencing prior search results."
+  }
+]

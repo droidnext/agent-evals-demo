@@ -1,0 +1,35 @@
+scenarios:
+  - title: "Search and Book Flow"
+    description: >
+      User searches for a cruise, narrows down options, asks about pricing,
+      and proceeds toward booking. Tests the full funnel from discovery
+      through purchase intent across search, pricing, and itinerary sub-agents.
+    file: search_and_book.json
+
+  - title: "Destination Comparison"
+    description: >
+      User compares Caribbean vs Mediterranean cruises, asks follow-up
+      questions about each, then picks one. Tests the recommendation
+      sub-agent's ability to maintain comparison context across turns.
+    file: destination_comparison.json
+
+  - title: "Family Vacation Planning"
+    description: >
+      User progressively builds requirements for a family cruise — kids
+      programs, budget, cabin type, dining. Tests how the agent accumulates
+      preferences over multiple turns and routes to the right sub-agents.
+    file: family_vacation.json
+
+  - title: "Budget-Constrained Search"
+    description: >
+      User starts with a tight budget, gets pricing feedback, adjusts
+      expectations, and finds a match. Tests pricing sub-agent interaction
+      and the agent's ability to help the user iterate on constraints.
+    file: budget_constrained.json
+
+  - title: "Itinerary Deep Dive"
+    description: >
+      User finds a cruise then drills into day-by-day itinerary details,
+      port stops, and excursion options. Tests the itinerary sub-agent
+      with successive refinement queries within a single conversation.
+    file: itinerary_deep_dive.json

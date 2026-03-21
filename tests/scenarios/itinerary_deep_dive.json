@@ -1,0 +1,57 @@
+[
+  {
+    "turn": 1,
+    "input": {
+      "role": "user",
+      "text": "Find me a 10-day cruise that visits multiple Greek islands",
+      "parameters": {
+        "duration_days": 10,
+        "destination": "Greek Islands"
+      }
+    },
+    "expected": "Agent should search for cruises with Greek island itineraries of approximately 10 days. Should present options that include multiple Greek island stops like Santorini, Mykonos, Crete, or Rhodes."
+  },
+  {
+    "turn": 2,
+    "input": {
+      "role": "user",
+      "text": "Give me the day-by-day itinerary for the first option",
+      "parameters": {
+        "selection": "first",
+        "detail_level": "day_by_day"
+      }
+    },
+    "expected": "Agent should use the itinerary sub-agent to provide a detailed day-by-day breakdown of the first cruise from the previous results, including port names, arrival/departure times, and sea days."
+  },
+  {
+    "turn": 3,
+    "input": {
+      "role": "user",
+      "text": "What excursions are available at the Santorini stop?",
+      "parameters": {
+        "port": "Santorini",
+        "intent": "excursions"
+      }
+    },
+    "expected": "Agent should provide excursion or activity options for the Santorini port stop — e.g., caldera tours, wine tasting, Oia village visits. Should maintain context of the specific cruise itinerary."
+  },
+  {
+    "turn": 4,
+    "input": {
+      "role": "user",
+      "text": "How much time do we have in each port?"
+    },
+    "expected": "Agent should provide port time durations for each stop in the itinerary. Should reference the specific cruise's schedule and indicate which ports have shorter vs longer stays."
+  },
+  {
+    "turn": 5,
+    "input": {
+      "role": "user",
+      "text": "Are there any sea days? What's there to do on board on those days?",
+      "parameters": {
+        "intent": "sea_day_activities"
+      }
+    },
+    "expected": "Agent should identify the sea days in the itinerary and describe onboard activities available — pools, shows, spa, dining, classes, etc. Should tie back to the specific ship and cruise being discussed."
+  }
+]

@@ -1,0 +1,60 @@
+[
+  {
+    "turn": 1,
+    "input": {
+      "role": "user",
+      "text": "We're a family of four — two adults and two kids ages 8 and 12. We want a cruise with great kids programs.",
+      "parameters": {
+        "passengers": {
+          "adults": 2,
+          "children": [8, 12]
+        },
+        "preferences": ["kids programs"]
+      }
+    },
+    "expected": "Agent should acknowledge the family composition and search for family-friendly cruises with kids programs. Should mention relevant amenities like kids clubs, water parks, or age-appropriate activities."
+  },
+  {
+    "turn": 2,
+    "input": {
+      "role": "user",
+      "text": "Our budget is about $6000 total for the family. What fits?",
+      "parameters": {
+        "budget": {
+          "amount": 6000,
+          "currency": "USD",
+          "scope": "total"
+        }
+      }
+    },
+    "expected": "Agent should filter or re-rank the family-friendly options from the previous turn against the $6000 budget constraint. Should use the pricing sub-agent and present options within budget."
+  },
+  {
+    "turn": 3,
+    "input": {
+      "role": "user",
+      "text": "Do any of those have connecting cabins or family suites?",
+      "parameters": {
+        "cabin_preferences": ["connecting", "family_suite"]
+      }
+    },
+    "expected": "Agent should reference the budget-filtered results and provide cabin configuration details — connecting rooms, family suites, or adjoining cabins. Should maintain the family context."
+  },
+  {
+    "turn": 4,
+    "input": {
+      "role": "user",
+      "text": "What about dining? We have a kid who's a picky eater."
+    },
+    "expected": "Agent should provide information about dining options on the shortlisted cruises, mentioning kids menus, buffet options, or flexible dining that accommodates picky eaters. Should stay in context of the family cruise search."
+  },
+  {
+    "turn": 5,
+    "input": {
+      "role": "user",
+      "text": "Which of these cruises would you recommend for us overall?",
+      "context": "User wants a final recommendation incorporating all stated preferences: family-friendly, under $6000, good cabins, and flexible dining."
+    },
+    "expected": "Agent should synthesize all accumulated preferences (family-friendly, budget, cabin type, dining) and give a top recommendation with reasoning via the recommendation sub-agent. Should reference specifics from earlier turns."
+  }
+]

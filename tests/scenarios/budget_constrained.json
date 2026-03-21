@@ -1,0 +1,66 @@
+[
+  {
+    "turn": 1,
+    "input": {
+      "role": "user",
+      "text": "I want a cruise but I only have about $1500 per person. What can I get?",
+      "parameters": {
+        "budget": {
+          "amount": 1500,
+          "currency": "USD",
+          "scope": "per_person"
+        }
+      }
+    },
+    "expected": "Agent should search for cruises within the $1500/person budget using the pricing sub-agent. Should present affordable options or explain what's available at that price point."
+  },
+  {
+    "turn": 2,
+    "input": {
+      "role": "user",
+      "text": "That's more limited than I expected. What if I go up to $2000?",
+      "parameters": {
+        "budget": {
+          "amount": 2000,
+          "currency": "USD",
+          "scope": "per_person"
+        }
+      }
+    },
+    "expected": "Agent should expand the search to the $2000/person range and show how the additional budget opens up more options. Should contrast with the previous $1500 results to highlight the value of the increase."
+  },
+  {
+    "turn": 3,
+    "input": {
+      "role": "user",
+      "text": "Are there any last-minute deals or off-season discounts?"
+    },
+    "expected": "Agent should address discount and deal availability — last-minute sailings, shoulder season pricing, or promotional offers. Should stay within the budget-conscious framing of the conversation."
+  },
+  {
+    "turn": 4,
+    "input": {
+      "role": "user",
+      "text": "Show me the best value 5-day cruise you can find under $2000",
+      "parameters": {
+        "duration_days": 5,
+        "budget": {
+          "amount": 2000,
+          "currency": "USD",
+          "scope": "per_person"
+        },
+        "sort_by": "value"
+      }
+    },
+    "expected": "Agent should search with specific constraints (5-day, under $2000) and present the best value option, explaining why it's a good deal. Should use both search and pricing sub-agents."
+  },
+  {
+    "turn": 5,
+    "input": {
+      "role": "user",
+      "text": "What's included in that price and what costs extra?",
+      "context": "User is asking about the cruise recommended in the previous turn."
+    },
+    "expected": "Agent should break down what's included (meals, entertainment, port fees) vs extras (excursions, drinks, spa, Wi-Fi) for the selected cruise from the previous turn. Should maintain context of the specific cruise discussed."
+  }
+]

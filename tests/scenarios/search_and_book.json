@@ -1,0 +1,47 @@
+[
+  {
+    "turn": 1,
+    "input": {
+      "role": "user",
+      "text": "I'm looking for a cruise vacation. What destinations do you have?"
+    },
+    "expected": "Agent should list available cruise destinations or regions (e.g., Caribbean, Mediterranean, Alaska) and invite the user to narrow their search."
+  },
+  {
+    "turn": 2,
+    "input": {
+      "role": "user",
+      "text": "Show me 7-day cruises from Miami",
+      "parameters": {
+        "duration_days": 7,
+        "departure_port": "Miami"
+      }
+    },
+    "expected": "Agent should route to the search sub-agent and return cruise options departing from Miami with approximately 7-day durations. Results should include ship names, dates, or itinerary highlights."
+  },
+  {
+    "turn": 3,
+    "input": {
+      "role": "user",
+      "text": "What's the price range for those options?"
+    },
+    "expected": "Agent should reference the cruises from the previous turn and provide pricing information via the pricing sub-agent. Should not ask the user to re-specify which cruises."
+  },
+  {
+    "turn": 4,
+    "input": {
+      "role": "user",
+      "text": "Tell me more about the cheapest option — what ports does it visit?",
+      "context": "User is referring to the lowest-priced cruise from the previous pricing response."
+    },
+    "expected": "Agent should identify the lowest-priced cruise from the prior turn, then provide itinerary details including port stops via the itinerary sub-agent. Should maintain context from earlier pricing results."
+  },
+  {
+    "turn": 5,
+    "input": {
+      "role": "user",
+      "text": "That sounds great. What cabin types are available and how do I book?"
+    },
+    "expected": "Agent should provide cabin type options (interior, ocean view, balcony, suite) with pricing differences, and explain the booking process or next steps. Should stay in context of the selected cruise."
+  }
+]
