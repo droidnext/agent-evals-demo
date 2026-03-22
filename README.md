@@ -203,7 +203,7 @@ The project includes a **two-phase** scenario harness: run the agent and capture
 ```bash
 # Enable local trace export for offline judging (recommended)
 export LOCAL_TRACE_ENABLED=true
-uv run python tests/test_scenarios.py
+uv run python tests/scenarios_runner.py
 ```
 
 **Execution reports** (sub-agent routing, per-turn timing, full responses) are written to `tests/reports/` as `exec_<timestamp>.md` and `exec_<timestamp>.json`. These are gitignored; use them to spot routing issues, latency spikes, and tool/SQL problems before or alongside LLM judging.
@@ -211,9 +211,9 @@ uv run python tests/test_scenarios.py
 Options:
 
 ```bash
-uv run python tests/test_scenarios.py --list              # List scenarios
-uv run python tests/test_scenarios.py --scenario "Budget" # Filter by title
-uv run python tests/test_scenarios.py --verbose           # Print full responses
+uv run python tests/scenarios_runner.py --list              # List scenarios
+uv run python tests/scenarios_runner.py --scenario "Budget" # Filter by title
+uv run python tests/scenarios_runner.py --verbose           # Print full responses
 ```
 
 ### Phase 2 — LLM-as-judge (offline)
@@ -272,7 +272,7 @@ This project is set up as an **AI evaluation example** — multi-agent routing, 
 
 - **Golden dataset** ([`evals/datasets/golden_dataset.csv`](evals/datasets/golden_dataset.csv)) — ~40 test cases for end-to-end evaluation
 - **Evaluation spec** (`evals/datasets/evaluation_spec.md`) — Code-based (schema, routing, tools), LLM-as-judge (relevance, completeness, coherence), and agent-path evals
-- **Multi-turn scenarios** — [`tests/test_scenarios.py`](tests/test_scenarios.py) + [`evals/tests/scenarios_llm_judge.py`](evals/tests/scenarios_llm_judge.py) for trace-backed runs and offline judging
+- **Multi-turn scenarios** — [`tests/scenarios_runner.py`](tests/scenarios_runner.py) + [`evals/tests/scenarios_llm_judge.py`](evals/tests/scenarios_llm_judge.py) for trace-backed runs and offline judging
 - **LLM-as-judge prompts** (`evals/eval_llm_judge/`) — YAML prompts + rubrics for response quality dimensions
 - **Notebooks** — `evals/notebooks/cruise_booking_eval.ipynb` for running and analyzing evals
 
@@ -309,7 +309,7 @@ evals/
 └── tests/
     └── scenarios_llm_judge.py  # Offline trace-based judge
 tests/
-├── test_scenarios.py     # Multi-turn scenario runner → tests/reports/
+├── scenarios_runner.py   # Multi-turn scenario runner → tests/reports/
 ├── scenarios/            # scenarios.yaml + per-scenario JSON
 └── reports/              # Execution reports exec_*.md / .json (gitignored)
 scripts/                  # Startup, data loading, Phoenix verification

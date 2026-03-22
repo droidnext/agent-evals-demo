@@ -9,16 +9,16 @@ for offline evaluation via evals/tests/scenarios_llm_judge.py.
 
 Usage:
     # Run all scenarios
-    python tests/test_scenarios.py
+    python tests/scenarios_runner.py
 
     # Run a specific scenario by title (substring match)
-    python tests/test_scenarios.py --scenario "Budget"
+    python tests/scenarios_runner.py --scenario "Budget"
 
     # List available scenarios without running them
-    python tests/test_scenarios.py --list
+    python tests/scenarios_runner.py --list
 
     # Verbose output (full responses)
-    python tests/test_scenarios.py --verbose
+    python tests/scenarios_runner.py --verbose
 """
 
 import os
@@ -291,7 +291,7 @@ def generate_reports(
 
 async def main():
     parser = argparse.ArgumentParser(
-        description="Run multi-turn agent test scenarios",
+        description="Run multi-turn agent scenarios (YAML + JSON definitions)",
     )
     parser.add_argument(
         "--scenario", type=str, help="Filter scenarios by title (substring match)"
