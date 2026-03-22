@@ -9,7 +9,10 @@
         "intent": "comparison"
       }
     },
-    "expected": "Agent should engage the recommendation sub-agent to provide a high-level comparison of Caribbean vs Mediterranean cruises covering aspects like weather, ports, activities, and typical pricing."
+    "expected": "Agent should engage the recommendation sub-agent to provide a high-level comparison of Caribbean vs Mediterranean cruises covering aspects like weather, ports, activities, and typical pricing.",
+    "tool_calls_expected": {
+      "required": ["semantic_search_cruises"]
+    }
   },
   {
     "turn": 2,
@@ -40,7 +43,10 @@
         "travel_month": "August"
       }
     },
-    "expected": "Agent should search for Mediterranean cruises in August, reflecting that the user has made a decision based on the prior comparison. Should route to search sub-agent with the right filters."
+    "expected": "Agent should search for Mediterranean cruises in August, reflecting that the user has made a decision based on the prior comparison. Should route to search sub-agent with the right filters.",
+    "tool_calls_expected": {
+      "required": ["search_cruises"]
+    }
   },
   {
     "turn": 5,
@@ -52,6 +58,9 @@
         "intent": "pricing_comparison"
       }
     },
-    "expected": "Agent should provide pricing comparisons for balcony vs suite cabins on the Mediterranean cruises from the previous turn. Should use the pricing sub-agent while referencing prior search results."
+    "expected": "Agent should provide pricing comparisons for balcony vs suite cabins on the Mediterranean cruises from the previous turn. Should use the pricing sub-agent while referencing prior search results.",
+    "tool_calls_expected": {
+      "required": ["get_pricing_info"]
+    }
   }
 ]

@@ -1,10 +1,16 @@
 """Phoenix tracing initialization and utilities."""
 
+import json
 import socket
 from contextlib import nullcontext
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Sequence
 from urllib.parse import urlparse
 
 from .config import (
+    LOCAL_TRACE_DIR,
+    LOCAL_TRACE_ENABLED,
     PHOENIX_API_KEY,
     PHOENIX_COLLECTOR_ENDPOINT,
     PHOENIX_ENABLED,
@@ -25,6 +31,53 @@ class NoOpTracer:
         return func
     def start_as_current_span(self, *args, **kwargs):
         return nullcontext()
+
+
+class LocalFileExporter:
+    """SpanExporter that writes finished spans as JSONL to a per-run directory.
+
+    Directory layout:
+        <base_dir>/<run_timestamp>/spans.jsonl   — one JSON object per line
+        <base_dir>/<run_timestamp>/metadata.json  — run-level info
+    """
+
+    def __init__(self, base_dir: str):
+        ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        self._run_dir = Path(base_dir) / ts
+        self._run_dir.mkdir(parents=True, exist_ok=True)
+        self._spans_path = self._run_dir / "spans.jsonl"
+        self._file = open(self._spans_path, "a", encoding="utf-8")
+
+        import os
+        meta = {
+            "run_timestamp": ts,
+            "model": os.getenv("LLM_MODEL", "unknown"),
+            "project": PHOENIX_PROJECT_NAME,
+        }
+        (self._run_dir / "metadata.json").write_text(
+            json.dumps(meta, indent=2), encoding="utf-8"
+        )
+
+    # --- SpanExporter protocol -------------------------------------------
+
+    def export(self, spans: Sequence) -> int:
+        """Write each ReadableSpan as a single JSON line. Returns SUCCESS (0)."""
+        for span in spans:
+            try:
+                self._file.write(
+                    json.dumps(json.loads(span.to_json()), separators=(",", ":")) + "\n"
+                )
+            except Exception:
+                pass
+        self._file.flush()
+        return 0  # SpanExportResult.SUCCESS
+
+    def shutdown(self) -> None:
+        self._file.close()
+
+    def force_flush(self, timeout_millis: int = 0) -> bool:
+        self._file.flush()
+        return True
 
 
 _tracer_provider = None
@@ -84,6 +137,12 @@ def initialize_tracing():
         GoogleADKInstrumentor().instrument(tracer_provider=_tracer_provider)
         OpenAIInstrumentor().instrument(tracer_provider=_tracer_provider)
         VertexAIInstrumentor().instrument(tracer_provider=_tracer_provider)
+
+        if LOCAL_TRACE_ENABLED:
+            from opentelemetry.sdk.trace.export import SimpleSpanProcessor
+            local_exporter = LocalFileExporter(LOCAL_TRACE_DIR)
+            _tracer_provider.add_span_processor(SimpleSpanProcessor(local_exporter))
+            print(f"   Local trace export: ✅  → {local_exporter._run_dir}")
 
         tracer = _tracer_provider.get_tracer(__name__)
 

@@ -44,10 +44,6 @@ class SemanticSearch:
     ) -> List[Dict[str, Any]]:
         """Perform semantic search."""
         try:
-            # Generate query embedding (currently unused by Chroma text search
-            # but kept for future similarity search extensions)
-            query_embedding = self.embed_text(query)
-            
             # Chroma expects either a valid `where` object or None, not an empty dict.
             where_clause = filters if filters else None
 

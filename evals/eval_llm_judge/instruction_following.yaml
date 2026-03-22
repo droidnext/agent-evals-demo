@@ -1,0 +1,68 @@
+# Instruction Following Evaluation Prompt
+# Criterion ID: 9
+# Weight: 5%
+# Score Range: 1-5
+
+name: InstructionFollowingEvaluator
+
+criterion_id: 9
+criterion_name: Instruction Following
+weight: 0.05
+score_range: [1, 5]
+type: llm_as_judge
+
+description: |
+  Evaluates how well the agent followed standard agent behavioral expectations:
+  delegating to tools/sub-agents before answering, providing structured responses,
+  and staying within its domain.
+
+template: |
+  You are evaluating how well an AI cruise booking agent followed expected behavioral guidelines.
+
+  [BEGIN DATA]
+  ************
+  [User Query]: {input}
+  ************
+  [Agent Response]: {output}
+  ************
+  [END DATA]
+
+  A well-behaved cruise booking agent should:
+  - Delegate to sub-agents or tools to fetch real data before responding (not fabricate answers)
+  - Present structured, organized results (ship names, prices, dates — not vague summaries)
+  - Stay within its domain (cruise bookings) and politely decline unrelated queries
+  - Offer follow-up options or next steps
+  - Escalate to a human when the user requests it or for booking/payment actions
+
+  Evaluation Criteria:
+  - Does the response appear grounded in real data (specific ships, prices, dates) rather than generic filler?
+  - Is the response well-formatted and structured for the query type?
+  - Does the agent stay within its cruise booking domain?
+  - Does the agent offer helpful next steps or follow-up options?
+
+  Scoring Guidelines:
+  5 - Perfect adherence: Response is data-grounded, well-structured, domain-appropriate, with clear next steps
+  4 - Strong adherence: Response follows most guidelines with minor deviations
+  3 - Moderate adherence: Response follows some guidelines but has notable gaps (e.g., vague data, poor formatting)
+  2 - Poor adherence: Response violates several guidelines (e.g., fabricated data, off-topic content)
+  1 - No adherence: Response ignores guidelines entirely
+
+  Your response must be in the following format:
+  Score: [1-5]
+  Reasoning: [Brief explanation of your score in 1-2 sentences]
+
+rubric:
+  - score: 5
+    label: PerfectAdherence
+  - score: 4
+    label: StrongAdherence
+  - score: 3
+    label: ModerateAdherence
+  - score: 2
+    label: PoorAdherence
+  - score: 1
+    label: NoAdherence
+
+required_variables:
+  - input
+  - output

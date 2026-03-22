@@ -24,7 +24,6 @@ template: |
   ************
   [Agent Response]: {output}
   ************
-  [Expected Response Type]: {expected_response_type}
   [END DATA]
 
   Your task is to evaluate how well the agent's response addresses what the user actually asked.
@@ -47,9 +46,18 @@ template: |
   Score: [1-5]
   Reasoning: [Brief explanation of your score in 1-2 sentences]
 
+rubric:
+  - score: 5
+    label: PerfectlyRelevant
+  - score: 4
+    label: HighlyRelevant
+  - score: 3
+    label: ModeratelyRelevant
+  - score: 2
+    label: SlightlyRelevant
+  - score: 1
+    label: NotRelevant
+
 required_variables:
   - input
   - output
-  - expected_response_type
-
-optional_variables: []

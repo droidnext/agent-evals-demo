@@ -17,7 +17,6 @@ agents_path = Path(__file__).parent.parent.parent / "agents"
 sys.path.insert(0, str(agents_path))
 
 from typing import Dict, Any
-import json
 
 
 class CruiseBookingAgent:

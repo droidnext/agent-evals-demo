@@ -1,0 +1,69 @@
+# Semantic Search Quality Evaluation Prompt
+# Criterion ID: 11
+# Weight: 5%
+# Score Range: 1-5 (LLM component, combined with code-based metrics)
+
+name: SemanticSearchQualityEvaluator
+
+criterion_id: 11
+criterion_name: Semantic Search Quality
+weight: 0.05
+score_range: [1, 5]
+type: llm_as_judge
+
+description: |
+  Evaluates the quality and appropriateness of search results in the agent's response.
+  Assesses whether the response reflects effective use of search tools.
+
+template: |
+  You are evaluating the quality of search results presented in an AI cruise booking agent's response.
+
+  [BEGIN DATA]
+  ************
+  [User Query]: {input}
+  ************
+  [Agent Response]: {output}
+  ************
+  [END DATA]
+
+  Consider what type of search was appropriate for this query:
+  - Natural language preferences (spa, romantic, family-friendly, adventure) → semantic/vector search
+  - Structured criteria (specific dates, ports, duration, budget) → SQL/structured search
+  - Some queries benefit from combining both approaches
+
+  Evaluation Criteria:
+  - Are the results in the response relevant to what the user asked for?
+  - Do the results match the user's stated preferences and constraints?
+  - Is the response based on actual search results (specific ships, dates, prices) rather than generic advice?
+  - If the query involved preferences, do the results reflect thematic/experiential matching?
+  - If the query involved structured filters, are the results correctly filtered?
+
+  Scoring Guidelines:
+  5 - Optimal: Results are highly relevant, well-matched to user intent, and clearly sourced from appropriate search
+  4 - Good: Results are mostly relevant with minor mismatches
+  3 - Acceptable: Results are somewhat relevant but miss key preferences or constraints
+  2 - Poor: Results don't match user needs or appear to be from the wrong type of search
+  1 - Incorrect: Results are irrelevant or the response lacks any search-backed data
+
+  Your response must be in the following format:
+  Score: [1-5]
+  Reasoning: [Brief explanation of your score in 1-2 sentences]
+
+rubric:
+  - score: 5
+    label: OptimalUsage
+  - score: 4
+    label: GoodUsage
+  - score: 3
+    label: AcceptableUsage
+  - score: 2
+    label: PoorUsage
+  - score: 1
+    label: IncorrectUsage
+
+required_variables:
+  - input
+  - output
+
+applicability: usecase_specific
+applicable_when: Agent uses search tools for data retrieval

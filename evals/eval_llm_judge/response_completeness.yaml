@@ -46,8 +46,18 @@ template: |
   Score: [1-5]
   Reasoning: [Brief explanation of your score in 1-2 sentences]
 
+rubric:
+  - score: 5
+    label: FullyComplete
+  - score: 4
+    label: MostlyComplete
+  - score: 3
+    label: PartiallyComplete
+  - score: 2
+    label: MinimallyComplete
+  - score: 1
+    label: Incomplete
+
 required_variables:
   - input
   - output
-
-optional_variables: []

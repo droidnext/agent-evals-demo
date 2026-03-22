@@ -40,6 +40,10 @@ PHOENIX_COLLECTOR_ENDPOINT = os.getenv('PHOENIX_COLLECTOR_ENDPOINT', 'https://ap
 is_local_phoenix = 'localhost' in PHOENIX_COLLECTOR_ENDPOINT or '127.0.0.1' in PHOENIX_COLLECTOR_ENDPOINT
 PHOENIX_ENABLED = is_local_phoenix or bool(PHOENIX_API_KEY)
 
+# Local trace file export (writes spans to .traces_local/ as JSONL)
+LOCAL_TRACE_ENABLED = os.getenv('LOCAL_TRACE_ENABLED', 'false').lower() == 'true'
+LOCAL_TRACE_DIR = os.getenv('LOCAL_TRACE_DIR', str(project_root / '.traces_local'))
+
 
 def get_model_instance(model: str = None):
     """

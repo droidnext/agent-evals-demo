@@ -114,16 +114,14 @@ class DataSearch:
             return result_df.to_dict(orient="records")
         except Exception as e:
             error_msg = str(e)
-            # Enhance error message with schema information for column errors
-            if "not found" in error_msg.lower() or "column" in error_msg.lower():
-                schema = self.get_schema()
-                schema_info = "\n".join([
-                    f"  - {table}({', '.join(columns)})"
-                    for table, columns in schema.items()
-                ])
-                error_msg = f"{error_msg}\n\nAvailable schema:\n{schema_info}"
+            schema = self.get_schema()
+            schema_info = "\n".join([
+                f"  - {table}({', '.join(columns)})"
+                for table, columns in schema.items()
+            ])
+            error_msg = f"SQL error: {error_msg}\n\nAvailable schema:\n{schema_info}"
             logger.error(f"Error executing SQL query: {error_msg}")
-            raise RuntimeError(error_msg) from e
+            return [{"error": error_msg}]
     
     def get_cruise_by_id(self, cruise_id: str) -> Optional[Dict[str, Any]]:
         """Get a specific cruise by ID."""

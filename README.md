@@ -4,6 +4,8 @@ An AI-powered cruise booking assistant built on the **Google Agent Development K
 
 Blog: [AI Evaluation Harness — A Practical Guide for Building Reliable Agents](https://medium.com/@droidnext/ai-evaluation-harness-a-practical-guide-for-building-reliable-agents-fa59c70dac1e)
 
+In-repo write-up: [`blog-trace-based-eval.md`](blog-trace-based-eval.md) — trace capture, offline LLM-as-judge, and using `tests/reports/` execution reports to improve routing and tools.
+
 ## Architecture
 
 ![Cruise Booking Agent Architecture](docs/assets/cruise_booking_architecture.png)
@@ -118,11 +120,14 @@ GOOGLE_API_KEY=...
 OPENAI_API_KEY=...
 ANTHROPIC_API_KEY=...
 
-# Phoenix tracing (optional)
-PHOENIX_ENABLED=true
+# Phoenix tracing (optional; see env.example for local vs cloud)
 PHOENIX_PROJECT_NAME=cruise-booking-agent
-PHOENIX_COLLECTOR_ENDPOINT=https://app.phoenix.arize.com
-PHOENIX_API_KEY=...
+PHOENIX_COLLECTOR_ENDPOINT=http://localhost:4317
+# PHOENIX_API_KEY=...  # cloud Phoenix
+
+# Local trace export for offline eval (optional)
+LOCAL_TRACE_ENABLED=true
+# LOCAL_TRACE_DIR=.traces_local
 ```
 
 ### Load Data
@@ -191,21 +196,43 @@ Tools use `@tracer.tool` / `@tracer.chain` decorators for span tracking.
 
 ## Multi-Turn Scenario Tests
 
-The project includes a scenario-driven test harness that evaluates the agent over multi-turn conversations with an LLM-as-judge.
+The project includes a **two-phase** scenario harness: run the agent and capture traces, then judge offline (optional).
 
-### Running
+### Phase 1 — Run scenarios
 
 ```bash
+# Enable local trace export for offline judging (recommended)
+export LOCAL_TRACE_ENABLED=true
 uv run python tests/test_scenarios.py
 ```
 
-### Scenario Structure
+**Execution reports** (sub-agent routing, per-turn timing, full responses) are written to `tests/reports/` as `exec_<timestamp>.md` and `exec_<timestamp>.json`. These are gitignored; use them to spot routing issues, latency spikes, and tool/SQL problems before or alongside LLM judging.
 
-Scenarios are defined in `tests/scenarios/scenarios.yaml` and reference JSON files with per-turn inputs and expectations:
+Options:
+
+```bash
+uv run python tests/test_scenarios.py --list              # List scenarios
+uv run python tests/test_scenarios.py --scenario "Budget" # Filter by title
+uv run python tests/test_scenarios.py --verbose           # Print full responses
+```
+
+### Phase 2 — LLM-as-judge (offline)
+
+Reads the latest `.traces_local/<run>/` directory and scores each turn against scenario expectations:
+
+```bash
+uv run python evals/tests/scenarios_llm_judge.py
+```
+
+**Judge reports** (PASS/FAIL per turn, reasons, tool usage from traces) are written to `evals/reports/` as JSON and Markdown.
+
+### Scenario structure
+
+Scenarios are defined in `tests/scenarios/scenarios.yaml` (see the file header for `tool_calls_expected` schema docs) and reference JSON turn files:
 
 ```
 tests/scenarios/
-├── scenarios.yaml              # Scenario registry
+├── scenarios.yaml              # Registry + documentation comments
 ├── search_and_book.json        # 5-turn search → pricing → booking flow
 ├── destination_comparison.json
 ├── family_vacation.json
@@ -213,9 +240,19 @@ tests/scenarios/
 └── itinerary_deep_dive.json
 ```
 
-Each turn specifies user input, optional parameters, and an expected behavior description. An LLM judge scores each turn as PASS/FAIL with a reason.
+Each turn typically includes:
 
-Reports are written to `tests/reports/` as both JSON (machine-readable) and Markdown (human-readable).
+- **`input`** — user text, optional `parameters`, `context`
+- **`expected`** — natural-language behavior description for the LLM judge
+- **`tool_calls_expected`** (optional) — assertions on tools seen in traces (`required`, `forbidden`, `exact`, `max_calls`, `none`)
+
+### Reports summary
+
+| Output | Location | Purpose |
+|--------|----------|---------|
+| Execution report | `tests/reports/exec_*.md` / `.json` | What the agent did — routing, timing, responses (improve prompts & transfer logic) |
+| Trace spans | `.traces_local/<timestamp>/` | Full OpenInference spans for debugging and the judge |
+| Judge report | `evals/reports/judge_*.{md,json}` | How well the agent met expectations (quality + tool checks) |
 
 ### Example: Search and Book Flow (5 turns)
 
@@ -235,7 +272,8 @@ This project is set up as an **AI evaluation example** — multi-agent routing, 
 
 - **Golden dataset** ([`evals/datasets/golden_dataset.csv`](evals/datasets/golden_dataset.csv)) — ~40 test cases for end-to-end evaluation
 - **Evaluation spec** (`evals/datasets/evaluation_spec.md`) — Code-based (schema, routing, tools), LLM-as-judge (relevance, completeness, coherence), and agent-path evals
-- **LLM-as-judge prompts** (`evals/eval_prompts/`) — YAML prompts for response quality dimensions
+- **Multi-turn scenarios** — [`tests/test_scenarios.py`](tests/test_scenarios.py) + [`evals/tests/scenarios_llm_judge.py`](evals/tests/scenarios_llm_judge.py) for trace-backed runs and offline judging
+- **LLM-as-judge prompts** (`evals/eval_llm_judge/`) — YAML prompts + rubrics for response quality dimensions
 - **Notebooks** — `evals/notebooks/cruise_booking_eval.ipynb` for running and analyzing evals
 
 ### Running evals
@@ -248,7 +286,7 @@ This project is set up as an **AI evaluation example** — multi-agent routing, 
 ### Extending
 
 - Add rows to `evals/datasets/golden_dataset.csv` for new query types
-- Add prompts to `evals/eval_prompts/` for new judge dimensions
+- Add prompts to `evals/eval_llm_judge/` for new judge dimensions
 - Use Phoenix experiments to A/B test prompts, models, or routing changes
 
 ## Project Structure
@@ -256,18 +294,24 @@ This project is set up as an **AI evaluation example** — multi-agent routing, 
 ```
 agents/cruise_booking/
 ├── agent.py              # Root agent definition
-├── config.py             # Environment config (model, Phoenix settings)
-├── tracing_util.py       # Phoenix tracing initialization
+├── config.py             # Environment config (model, Phoenix, LOCAL_TRACE_*)
+├── tracing_util.py       # Phoenix + optional LocalFileExporter (.traces_local/)
 ├── prompt_loader.py      # YAML prompt loading
+├── prompts/              # Agent instruction prompts (YAML)
 ├── sub_agents/           # Sub-agent definitions
 └── tools/                # Tool implementations (data search, semantic search, escalation)
-prompts/                  # Agent instruction prompts (YAML)
 data/                     # Cruise data (JSONL, Parquet)
-evals/                    # Evaluation datasets, prompts, notebooks
+evals/
+├── datasets/             # Golden dataset, evaluation spec
+├── eval_llm_judge/       # LLM-as-judge YAML prompts + rubrics
+├── notebooks/            # Eval analysis notebooks
+├── reports/              # Judge outputs (from scenarios_llm_judge.py)
+└── tests/
+    └── scenarios_llm_judge.py  # Offline trace-based judge
 tests/
-├── test_scenarios.py     # Multi-turn scenario test runner
-├── scenarios/            # Scenario definitions (YAML + JSON)
-└── reports/              # Test reports (JSON + Markdown)
+├── test_scenarios.py     # Multi-turn scenario runner → tests/reports/
+├── scenarios/            # scenarios.yaml + per-scenario JSON
+└── reports/              # Execution reports exec_*.md / .json (gitignored)
 scripts/                  # Startup, data loading, Phoenix verification
 phoenix-arize/            # Docker Compose for local Phoenix
 ```

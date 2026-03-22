@@ -46,8 +46,18 @@ template: |
   Score: [1-5]
   Reasoning: [Brief explanation of your score in 1-2 sentences]
 
+rubric:
+  - score: 5
+    label: ExcellentCoherence
+  - score: 4
+    label: GoodCoherence
+  - score: 3
+    label: ModerateCoherence
+  - score: 2
+    label: PoorCoherence
+  - score: 1
+    label: Incoherent
+
 required_variables:
   - input
   - output
-
-optional_variables: []

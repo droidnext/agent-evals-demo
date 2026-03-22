@@ -1,6 +1,5 @@
 """Utility to load agent prompts from YAML files."""
 
-import os
 from pathlib import Path
 from typing import Dict, Any
 import yaml
@@ -17,9 +16,7 @@ class PromptLoader:
             prompts_dir: Path to prompts directory. If None, uses project root/prompts
         """
         if prompts_dir is None:
-            # Get project root (3 levels up from this file)
-            project_root = Path(__file__).parent.parent.parent
-            prompts_dir = project_root / "prompts"
+            prompts_dir = Path(__file__).parent / "prompts"
         
         self.prompts_dir = Path(prompts_dir)
         self._cache: Dict[str, Dict[str, Any]] = {}

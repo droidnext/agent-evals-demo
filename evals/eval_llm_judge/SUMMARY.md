@@ -1,7 +1,7 @@
 # LLM-As-Judge Evaluation Prompts - Summary
 
 **Created:** January 20, 2026  
-**Location:** `/evals/eval_prompts/`
+**Location:** `/evals/eval_llm_judge/`
 
 ## What Was Created
 
@@ -10,7 +10,7 @@ This directory contains **6 YAML-based LLM-as-judge prompt templates** for evalu
 ### File Structure
 
 ```
-evals/eval_prompts/
+evals/eval_llm_judge/
 ├── __init__.py                      # Package initialization with YAML loaders
 ├── response_relevance.yaml          # Criterion 1: Response Relevance (15%)
 ├── response_completeness.yaml       # Criterion 2: Response Completeness (15%)
@@ -85,7 +85,7 @@ While created for cruise booking agents, prompts can be adapted for:
 ## Usage Example
 
 ```python
-from evals.eval_prompts import RESPONSE_RELEVANCE_TEMPLATE, load_prompt
+from evals.eval_llm_judge import RESPONSE_RELEVANCE_TEMPLATE, load_prompt
 
 # Method 1: Use pre-loaded template
 prompt = RESPONSE_RELEVANCE_TEMPLATE.format(

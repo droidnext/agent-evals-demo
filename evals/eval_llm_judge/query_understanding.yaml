@@ -1,0 +1,65 @@
+# Query Understanding Quality Evaluation Prompt
+# Criterion ID: 6
+# Weight: 15%
+# Score Range: 1-5
+
+name: QueryUnderstandingEvaluator
+
+criterion_id: 6
+criterion_name: Query Understanding Quality
+weight: 0.15
+score_range: [1, 5]
+type: llm_as_judge
+
+description: |
+  Evaluates how well the agent understood the user's query and its underlying intent.
+  Assesses recognition of explicit requirements and implicit needs.
+
+template: |
+  You are evaluating how well an AI agent understood the user's query and its underlying intent.
+
+  [BEGIN DATA]
+  ************
+  [User Query]: {input}
+  ************
+  [Agent Response]: {output}
+  ************
+  [END DATA]
+
+  Based on the response, evaluate whether the agent correctly understood:
+  1. The explicit requirements stated in the query (dates, locations, budget, preferences)
+  2. The implicit intent and context of the request (query type, tone, urgency)
+  3. The type of information or action the user needs
+
+  Evaluation Criteria:
+  - Does the response demonstrate correct identification of the query type (search, recommendation, pricing, itinerary)?
+  - Does the response show that all explicit requirements were recognized?
+  - Does the response account for implicit needs (e.g., "family cruise" implies kid-friendly amenities)?
+  - Do the agent's actions and response align with the user's intent?
+
+  Scoring Guidelines:
+  5 - Perfect understanding: Response demonstrates correct identification of all explicit and implicit requirements
+  4 - Strong understanding: Response captures main intent with minor missed nuances
+  3 - Adequate understanding: Response shows basic understanding but misses important aspects
+  2 - Poor understanding: Response misinterprets key aspects of the query
+  1 - Failed to understand: Response shows complete misunderstanding of the user's intent
+
+  Your response must be in the following format:
+  Score: [1-5]
+  Reasoning: [Brief explanation of your score in 1-2 sentences]
+
+rubric:
+  - score: 5
+    label: PerfectUnderstanding
+  - score: 4
+    label: StrongUnderstanding
+  - score: 3
+    label: AdequateUnderstanding
+  - score: 2
+    label: PoorUnderstanding
+  - score: 1
+    label: FailedToUnderstand
+
+required_variables:
+  - input
+  - output

@@ -78,7 +78,7 @@ class AgentPath(BaseModel):
         """Convert to dictionary for logging."""
         return {
             "query": self.query,
-            "events": [event.dict() for event in self.events],
+            "events": [event.model_dump() for event in self.events],
             "reasoning_output": self.reasoning_output,
             "agents_invoked": self.agents_invoked,
             "execution_time_ms": self.execution_time_ms,

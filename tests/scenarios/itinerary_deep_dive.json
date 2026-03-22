@@ -9,7 +9,10 @@
         "destination": "Greek Islands"
       }
     },
-    "expected": "Agent should search for cruises with Greek island itineraries of approximately 10 days. Should present options that include multiple Greek island stops like Santorini, Mykonos, Crete, or Rhodes."
+    "expected": "Agent should search for cruises with Greek island itineraries of approximately 10 days. Should present options that include multiple Greek island stops like Santorini, Mykonos, Crete, or Rhodes.",
+    "tool_calls_expected": {
+      "required": ["search_cruises"]
+    }
   },
   {
     "turn": 2,
@@ -21,7 +24,10 @@
         "detail_level": "day_by_day"
       }
     },
-    "expected": "Agent should use the itinerary sub-agent to provide a detailed day-by-day breakdown of the first cruise from the previous results, including port names, arrival/departure times, and sea days."
+    "expected": "Agent should use the itinerary sub-agent to provide a detailed day-by-day breakdown of the first cruise from the previous results, including port names, arrival/departure times, and sea days.",
+    "tool_calls_expected": {
+      "required": ["get_cruise_by_id"]
+    }
   },
   {
     "turn": 3,
@@ -41,7 +47,10 @@
       "role": "user",
       "text": "How much time do we have in each port?"
     },
-    "expected": "Agent should provide port time durations for each stop in the itinerary. Should reference the specific cruise's schedule and indicate which ports have shorter vs longer stays."
+    "expected": "Agent should provide port time durations for each stop in the itinerary. Should reference the specific cruise's schedule and indicate which ports have shorter vs longer stays.",
+    "tool_calls_expected": {
+      "required": ["get_cruise_by_id"]
+    }
   },
   {
     "turn": 5,
