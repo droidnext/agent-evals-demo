@@ -18,44 +18,7 @@
 #   {"tool_calls_expected": {"exact": ["transfer_to_agent", "search_cruises"]}}
 #   {"tool_calls_expected": {"none": true}}
 #
-# Token usage is NOT configured here — it is model-dependent and extracted
-# directly from trace spans (attributes.llm.token_count.*) at eval time.
-#
-# ── Using reports to improve the agent ──────────────────────────────
-#
-# test_scenarios.py writes execution reports to tests/reports/:
-#   exec_<timestamp>.md   — human-readable Markdown
-#   exec_<timestamp>.json — machine-readable, diff-friendly
-#
-# Use these reports to identify and fix agent issues:
-#
-#   Routing problems
-#     The Sub-Agent Distribution table shows which sub-agents handled
-#     each turn. If one agent handles everything (e.g. ItinerarySearchAgent
-#     for all 10 turns), the root agent's transfer instructions need
-#     tuning — update agents/cruise_booking/prompts/root_agent.yaml.
-#
-#   Slow turns
-#     The per-turn timing column highlights latency spikes. Common
-#     causes: unnecessary tool calls, large SQL result sets, or
-#     redundant LLM round-trips. Cross-reference with traces in
-#     .traces_local/ for the full span breakdown.
-#
-#   Wrong or missing tool usage
-#     Compare the "Sub-Agents" and tool_calls_expected fields. If the
-#     agent used search_cruises when get_pricing_info was expected,
-#     refine the sub-agent's instruction prompt or the root agent's
-#     transfer logic.
-#
-#   Response quality
-#     The collapsible "Full responses" section lets you read every
-#     agent reply. Pair with evals/tests/scenarios_llm_judge.py
-#     (which writes to evals/reports/) for automated pass/fail scoring.
-#
-#   Regression tracking
-#     Keep reports across runs to compare. The JSON format is stable
-#     and diff-friendly — track sub-agent distribution, timing, and
-#     response lengths over time as you iterate on prompts and tools.
+
 
 app_name: cruise_booking
 user_id: test_user
